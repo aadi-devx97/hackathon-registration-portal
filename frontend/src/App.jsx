@@ -1,22 +1,21 @@
-import Navbar from './components/layout/Navbar'
-import Hero from './components/layout/Hero'
-import About from './components/layout/About'
-import Timeline from './components/layout/Timeline'
-import Prizes from './components/layout/Prizes'
-import FinalCTA from './components/layout/FinalCTA'
-import Footer from './components/layout/Footer'
+import { Routes, Route } from 'react-router-dom'
+import Home from './pages/Home'
+import Signup from './pages/Signup'
+import Login from './pages/Login'
+import VerifyOTP from './pages/VerifyOTP'
+import Dashboard from './pages/Dashboard'
+import Registration from './pages/Registration'
 
 function App() {
   return (
-    <main className="min-h-screen bg-ivory text-charcoal">
-      <Navbar />
-      <Hero />
-      <About />
-      <Timeline />
-      <Prizes />
-      <FinalCTA />
-      <Footer />
-    </main>
+    <Routes>
+      <Route path="/" element={<Home />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/signup" element={<Signup />} />
+      <Route path="/verify-otp" element={<VerifyOTP />} />
+      <Route path="/dashboard" element={<Dashboard />} />
+      <Route path="/register" element={<Registration />} />
+    </Routes>
   )
 }
 
