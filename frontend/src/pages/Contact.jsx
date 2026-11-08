@@ -6,13 +6,22 @@ function Contact() {
 
       <div className="mx-auto max-w-6xl">
 
-        {/* Brand */}
-        <Link
-          to="/"
-          className="font-display text-2xl font-semibold text-forest"
-        >
-          MatruCare AI
-        </Link>
+        {/* Brand */}        
+        <div className="flex items-center justify-between">
+          <Link
+            to="/"
+            className="font-display text-2xl font-semibold text-forest"
+          >
+            MatruCare AI
+          </Link>
+
+          <Link
+            to="/"
+            className="text-sm text-forest underline underline-offset-4"
+          >
+            ← Back to Home
+          </Link>
+        </div>
 
         {/* Page Heading */}
         <div className="mb-14 mt-20 max-w-2xl">
