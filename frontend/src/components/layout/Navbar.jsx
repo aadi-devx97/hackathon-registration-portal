@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 
 function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -16,7 +17,7 @@ function Navbar() {
         <div className="hidden items-center gap-8 md:flex">
           <a href="#home">Home</a>
           <a href="#about">About</a>
-          <a href="#contact">Contact</a>
+          <Link to="/contact">Contact</Link>
           <a href="/login">Login</a>
           <a
             href="/signup"
