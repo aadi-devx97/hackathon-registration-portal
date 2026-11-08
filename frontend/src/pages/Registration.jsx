@@ -27,6 +27,43 @@ function Registration() {
     }))
   }
 
+  function handleTeamSizeChange(event) {
+    const size = Number(event.target.value)
+
+    setFormData((previousData) => ({
+      ...previousData,
+      teamSize: event.target.value,
+
+      teamMembers:
+        size === 1
+          ? []
+          : Array.from(
+              { length: size },
+              (_, index) =>
+                previousData.teamMembers[index] || {
+                  name: '',
+                  email: '',
+                }
+            ),
+    }))
+  }
+
+  function handleTeamMemberChange(index, field, value) {
+    setFormData((previousData) => {
+      const updatedMembers = [...previousData.teamMembers]
+
+      updatedMembers[index] = {
+        ...updatedMembers[index],
+        [field]: value,
+      }
+
+      return {
+        ...previousData,
+        teamMembers: updatedMembers,
+      }
+    })
+  }               
+
   return (
     <main className="min-h-screen bg-ivory px-6 py-20">
       <div className="mx-auto max-w-4xl">
@@ -44,7 +81,10 @@ function Registration() {
           you want to build.
         </p>
 
-        <form className="mt-16 space-y-16">
+        <form 
+          className="mt-16 space-y-16"
+          onSubmit={(event) => event.preventDefault()}
+        >
 
           {/* Personal Details */}
           <section>
@@ -67,6 +107,8 @@ function Registration() {
                   placeholder="Enter your full name"
                   required
                   minLength={3}
+                  pattern="[A-Za-z ]+"
+                  title="Name should contain letters and spaces only"
                   className="w-full border border-sage bg-transparent px-4 py-3 outline-none focus:border-forest"
                 />
               </div>
@@ -205,6 +247,251 @@ function Registration() {
 
             </div>
           </section>
+
+          {/* Project Details */}
+          <section>
+            <h2 className="border-b border-sage pb-4 font-display text-2xl text-forest">
+              03. Project Details
+            </h2>
+
+            <div className="mt-8 grid gap-6 md:grid-cols-2">
+
+              {/* Project Name */}
+              <div className="md:col-span-2">
+                <label htmlFor="projectName" className="mb-2 block text-sm font-medium">
+                  Project Name
+                </label>
+
+                <input
+                  id="projectName"
+                  name="projectName"
+                  value={formData.projectName}
+                  onChange={handleChange}
+                  placeholder="Give your project a name"
+                  minLength={5}
+                  required
+                  className="w-full border border-sage bg-transparent px-4 py-3 outline-none focus:border-forest"
+                />
+              </div>
+
+              {/* Domain */}
+              <div>
+                <label htmlFor="domain" className="mb-2 block text-sm font-medium">
+                  Domain / Track
+                </label>
+
+                <select
+                  id="domain"
+                  name="domain"
+                  value={formData.domain}
+                  onChange={handleChange}
+                  required
+                  className="w-full border border-sage bg-ivory px-4 py-3 outline-none focus:border-forest"
+                >
+                  <option value="">Select domain</option>
+                  <option value="AI/ML">AI / ML</option>
+                  <option value="Web Development">Web Development</option>
+                  <option value="IoT">Internet of Things (IoT)</option>
+                  <option value="Cyber Security">Cyber Security</option>
+                  <option value="Blockchain">Blockchain</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+
+              {/* PPT Link */}
+              <div>
+                <label htmlFor="pptLink" className="mb-2 block text-sm font-medium">
+                  Project PPT Link
+                </label>
+
+                <input
+                  id="pptLink"
+                  name="pptLink"
+                  type="url"
+                  value={formData.pptLink}
+                  onChange={handleChange}
+                  placeholder="https://drive.google.com/..."
+                  required
+                  className="w-full border border-sage bg-transparent px-4 py-3 outline-none focus:border-forest"
+                />
+              </div>
+
+              {/* Prototype Link */}
+              <div className="md:col-span-2">
+                <label htmlFor="prototypeLink" className="mb-2 block text-sm font-medium">
+                  Prototype Link
+                </label>
+
+                <input
+                  id="prototypeLink"
+                  name="prototypeLink"
+                  type="url"
+                  value={formData.prototypeLink}
+                  onChange={handleChange}
+                  placeholder="GitHub, Figma or live demo URL"
+                  required
+                  className="w-full border border-sage bg-transparent px-4 py-3 outline-none focus:border-forest"
+                />
+              </div>
+
+              {/* Optional Demo Video */}
+              <div className="md:col-span-2">
+                <label htmlFor="demoVideoLink" className="mb-2 block text-sm font-medium">
+                  Demo Video Link
+                  <span className="ml-2 text-xs font-normal text-muted">
+                    (Optional)
+                  </span>
+                </label>
+
+                <input
+                  id="demoVideoLink"
+                  name="demoVideoLink"
+                  type="url"
+                  value={formData.demoVideoLink}
+                  onChange={handleChange}
+                  placeholder="YouTube or Google Drive link"
+                  className="w-full border border-sage bg-transparent px-4 py-3 outline-none focus:border-forest"
+                />
+              </div>
+
+            </div>
+          </section>
+
+          {/* Team Details */}
+          <section>
+            <h2 className="border-b border-sage pb-4 font-display text-2xl text-forest">
+              04. Team Details
+            </h2>
+
+            <div className="mt-8 max-w-md">
+              <label
+                htmlFor="teamSize"
+                className="mb-2 block text-sm font-medium"
+              >
+                Team Size
+              </label>
+
+              <select
+                id="teamSize"
+                name="teamSize"
+                value={formData.teamSize}
+                onChange={handleTeamSizeChange}
+                required
+                className="w-full border border-sage bg-ivory px-4 py-3 outline-none focus:border-forest"
+              >
+                <option value="1">1 — Solo</option>
+                <option value="2">2 Members</option>
+                <option value="3">3 Members</option>
+                <option value="4">4 Members</option>
+                <option value="5">5 Members</option>
+              </select>
+            </div>
+
+            {formData.teamMembers.length > 0 && (
+              <div className="mt-10 space-y-8">
+
+                <div>
+                  <h3 className="font-display text-xl text-forest">
+                    Team Member Information
+                  </h3>
+
+                  <p className="mt-2 text-sm text-muted">
+                    Enter the name and email address of each team member.
+                  </p>
+                </div>
+
+                {formData.teamMembers.map((member, index) => (
+                  <div
+                    key={index}
+                    className="border-t border-sage pt-6"
+                  >
+                    <p className="mb-6 font-display text-lg text-forest">
+                      Member {index + 1}
+                    </p>
+
+                    <div className="grid gap-6 md:grid-cols-2">
+
+                      <div>
+                        <label
+                          htmlFor={`memberName-${index}`}
+                          className="mb-2 block text-sm font-medium"
+                        >
+                          Member Name
+                        </label>
+
+                        <input
+                          id={`memberName-${index}`}
+                          type="text"
+                          value={member.name}
+                          onChange={(event) =>
+                            handleTeamMemberChange(
+                              index,
+                              'name',
+                              event.target.value
+                            )
+                          }
+                          placeholder="Enter member name"
+                          required
+                          className="w-full border border-sage bg-transparent px-4 py-3 outline-none focus:border-forest"
+                        />
+                      </div>
+
+                      <div>
+                        <label
+                          htmlFor={`memberEmail-${index}`}
+                          className="mb-2 block text-sm font-medium"
+                        >
+                          Member Email
+                        </label>
+
+                        <input
+                          id={`memberEmail-${index}`}
+                          type="email"
+                          value={member.email}
+                          onChange={(event) =>
+                            handleTeamMemberChange(
+                              index,
+                              'email',
+                              event.target.value
+                            )
+                          }
+                          placeholder="member@example.com"
+                          required
+                          className="w-full border border-sage bg-transparent px-4 py-3 outline-none focus:border-forest"
+                        />
+                      </div>
+
+                    </div>
+                  </div>
+                ))}
+
+              </div>
+            )}
+
+            {formData.teamSize === '1' && (
+              <p className="mt-6 text-sm text-muted">
+                You're registering as a solo participant. No additional
+                team-member details are required.
+              </p>
+            )}
+          </section>
+
+          {/* Form Submission */}
+          <div className="border-t border-sage pt-8">
+
+            <p className="mb-6 max-w-2xl text-sm leading-6 text-muted">
+              Please review your personal, academic and project details
+              before submitting your hackathon registration.
+            </p>
+
+            <button
+              type="submit"
+              className="w-full bg-forest px-7 py-4 font-medium text-ivory transition-colors hover:bg-charcoal sm:w-auto"
+            >
+              Submit Registration →
+            </button>
+
+          </div>
 
         </form>
       </div>
