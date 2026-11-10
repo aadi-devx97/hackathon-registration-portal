@@ -37,3 +37,21 @@ export const verifyOtpSchema = z.object({
     .string()
     .regex(/^\d{6}$/, "OTP must contain exactly 6 digits."),
 });
+
+export const loginSchema = z.object({
+  email: z
+    .string()
+    .trim()
+    .email("Please enter a valid email address."),
+
+  password: z
+    .string()
+    .min(1, "Password is required."),
+});
+
+export const resendOtpSchema = z.object({
+  email: z
+    .string()
+    .trim()
+    .email("Please enter a valid email address."),
+});

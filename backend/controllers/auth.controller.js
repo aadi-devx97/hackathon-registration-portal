@@ -1,5 +1,5 @@
 import bcrypt from "bcrypt";
-
+import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 import { generateOtp, hashOtp } from "../utils/otp.js";
 import { sendOtpEmail } from "../services/email.service.js";
@@ -38,7 +38,7 @@ export const signup = async (req, res) => {
 
     // Send the OTP to the user's email
     try {
-      await sendOtpEmail(email, otp, fullName);
+      await sendOtpEmail(email, otp);
     } catch (emailError) {
       console.error("OTP email delivery failed:", emailError.message);
 
@@ -122,6 +122,122 @@ export const verifyEmailOtp = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Something went wrong during OTP verification.",
+    });
+  }
+};
+
+export const login = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    // Find user and explicitly include the hidden password field
+    const user = await User.findOne({ email }).select("+password");
+
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid email or password.",
+      });
+    }
+
+    // Check whether email is verified
+    if (!user.isVerified) {
+      return res.status(403).json({
+        success: false,
+        message: "Please verify your email before logging in.",
+      });
+    }
+
+    const isPasswordValid = await bcrypt.compare(
+      password,
+      user.password
+    );
+
+    if (!isPasswordValid) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid email or password.",
+      });
+    }
+
+    const token = jwt.sign(
+      { userId: user._id },
+      process.env.JWT_SECRET,
+      { expiresIn: "1d" }
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: "Login successful.",
+      token,
+      user: {
+        id: user._id,
+        fullName: user.fullName,
+        email: user.email,
+      },
+    });
+  } catch (error) {
+    console.error("Login error:", error.message);
+
+    return res.status(500).json({
+      success: false,
+      message: "Something went wrong during login.",
+    });
+  }
+};
+
+export const resendOtp = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "Account not found.",
+      });
+    }
+
+    if (user.isVerified) {
+      return res.status(400).json({
+        success: false,
+        message: "This email is already verified.",
+      });
+    }
+
+    // Generate a fresh OTP
+    const otp = generateOtp();
+
+    // Hash the OTP before storing it
+    user.otpHash = await hashOtp(otp);
+
+    // Set a new 10-minute expiry
+    user.otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
+
+    await user.save();
+
+    try {
+      await sendOtpEmail(email, otp);
+    } catch (emailError) {
+      console.error("Resend OTP email failed:", emailError.message);
+
+      return res.status(503).json({
+        success: false,
+        message: "Unable to send a new verification email. Please try again later.",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "A new verification code has been sent to your email.",
+    });
+  } catch (error) {
+    console.error("Resend OTP error:", error.message);
+
+    return res.status(500).json({
+      success: false,
+      message: "Something went wrong while resending the OTP.",
     });
   }
 };
