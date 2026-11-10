@@ -54,3 +54,22 @@ export const sendRegistrationEmail = async (registration) => {
 
   return transporter.sendMail(mailOptions);
 };
+
+export const sendContactEmail = async ({ name, email, message }) => {
+  const mailOptions = {
+    from: `"${process.env.EMAIL_FROM_NAME}" <${process.env.EMAIL_FROM_ADDRESS}>`,
+    to: process.env.EMAIL_FROM_ADDRESS,
+    replyTo: email,
+    subject: "New Contact Form Message",
+
+    text: `A new message has been received through the website contact form.
+
+Name: ${name}
+Email: ${email}
+
+Message:
+${message}`,
+  };
+
+  return transporter.sendMail(mailOptions);
+};
