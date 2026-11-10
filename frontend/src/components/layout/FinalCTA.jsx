@@ -1,10 +1,10 @@
+import { Link } from 'react-router-dom'
+
 function FinalCTA() {
   return (
     <section className="bg-[#E8E9DF]">
       <div className="mx-auto max-w-7xl px-6 py-24">
-
         <div className="flex flex-col justify-between gap-10 md:flex-row md:items-end">
-
           <div className="max-w-2xl">
             <p className="mb-5 text-sm font-semibold uppercase tracking-[0.2em] text-terracotta">
               Your journey starts here
@@ -24,21 +24,20 @@ function FinalCTA() {
           </div>
 
           <div className="flex flex-wrap gap-4">
-            <a
-              href="/signup"
+            <Link
+              to="/signup"
               className="bg-forest px-7 py-4 font-medium text-ivory transition-colors hover:bg-charcoal"
             >
               Register Now ↗
-            </a>
+            </Link>
 
-            <a
-              href="/login"
+            <Link
+              to="/login"
               className="border border-forest px-7 py-4 font-medium text-forest transition-colors hover:bg-sage/30"
             >
               Login
-            </a>
+            </Link>
           </div>
-
         </div>
 
         <div className="mt-16 border-t border-sage pt-5">
@@ -46,7 +45,6 @@ function FinalCTA() {
             DON'T JUST IMAGINE IT. BUILD IT.
           </p>
         </div>
-
       </div>
     </section>
   )
