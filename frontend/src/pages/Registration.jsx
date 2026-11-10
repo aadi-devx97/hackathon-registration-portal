@@ -1,6 +1,11 @@
-import { useState } from 'react'
+
+import { useEffect, useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import API_BASE_URL from '../config/api'
 
 function Registration() {
+  const navigate = useNavigate()
+
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -18,6 +23,49 @@ function Registration() {
     teamMembers: [],
   })
 
+  const [loading, setLoading] = useState(false)
+  const [fetchingProfile, setFetchingProfile] = useState(true)
+  const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
+
+  // Fetch authenticated user's profile
+  useEffect(() => {
+    async function fetchProfile() {
+      const token = localStorage.getItem('token')
+
+      if (!token) {
+        navigate('/login', { replace: true })
+        return
+      }
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/user/me`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+
+        const data = await response.json()
+
+        if (!response.ok) {
+          throw new Error(data.message || 'Unable to load your profile.')
+        }
+
+        setFormData((previousData) => ({
+          ...previousData,
+          fullName: data.user.fullName,
+          email: data.user.email,
+        }))
+      } catch (error) {
+        setError(error.message)
+      } finally {
+        setFetchingProfile(false)
+      }
+    }
+
+    fetchProfile()
+  }, [navigate])
+
   function handleChange(event) {
     const { name, value } = event.target
 
@@ -33,7 +81,6 @@ function Registration() {
     setFormData((previousData) => ({
       ...previousData,
       teamSize: event.target.value,
-
       teamMembers:
         size === 1
           ? []
@@ -62,11 +109,80 @@ function Registration() {
         teamMembers: updatedMembers,
       }
     })
-  }               
+  }
+
+  async function handleSubmit(event) {
+    event.preventDefault()
+    setError('')
+    setSuccess('')
+
+    const token = localStorage.getItem('token')
+
+    if (!token) {
+      navigate('/login', { replace: true })
+      return
+    }
+
+    try {
+      setLoading(true)
+
+      const payload = {
+        ...formData,
+        teamSize: Number(formData.teamSize),
+      }
+
+      const response = await fetch(`${API_BASE_URL}/hackathon/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      })
+
+      const data = await response.json()
+
+      if (response.status === 401) {
+        localStorage.removeItem('token')
+        localStorage.removeItem('user')
+        navigate('/login', { replace: true })
+        return
+      }
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Registration failed. Please try again.')
+      }
+
+      setSuccess('Your hackathon registration was successful! Redirecting to your dashboard...')
+
+      setTimeout(() => {
+        navigate('/dashboard', { replace: true })
+      }, 1800)
+    } catch (error) {
+      setError(error.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (fetchingProfile) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-ivory">
+        <p className="text-forest">Loading your profile...</p>
+      </main>
+    )
+  }
 
   return (
     <main className="min-h-screen bg-ivory px-6 py-20">
       <div className="mx-auto max-w-4xl">
+
+        <Link
+          to="/dashboard"
+          className="mb-8 inline-block text-sm font-medium text-forest underline underline-offset-4"
+        >
+          ← Back to Dashboard
+        </Link>
 
         <p className="text-sm font-semibold uppercase tracking-[0.2em] text-terracotta">
           Hackathon Registration
@@ -81,9 +197,21 @@ function Registration() {
           you want to build.
         </p>
 
-        <form 
+        {error && (
+          <div className="mt-8 border border-red-300 bg-red-50 p-4 text-sm text-red-700">
+            {error}
+          </div>
+        )}
+
+        {success && (
+          <div className="mt-8 border border-green-300 bg-green-50 p-4 text-sm text-green-800">
+            {success}
+          </div>
+        )}
+
+        <form
           className="mt-16 space-y-16"
-          onSubmit={(event) => event.preventDefault()}
+          onSubmit={handleSubmit}
         >
 
           {/* Personal Details */}
@@ -103,13 +231,8 @@ function Registration() {
                   id="fullName"
                   name="fullName"
                   value={formData.fullName}
-                  onChange={handleChange}
-                  placeholder="Enter your full name"
-                  required
-                  minLength={3}
-                  pattern="[A-Za-z ]+"
-                  title="Name should contain letters and spaces only"
-                  className="w-full border border-sage bg-transparent px-4 py-3 outline-none focus:border-forest"
+                  readOnly
+                  className="w-full border border-sage bg-[#E8E9DF] px-4 py-3 text-muted outline-none"
                 />
               </div>
 
@@ -123,10 +246,8 @@ function Registration() {
                   name="email"
                   type="email"
                   value={formData.email}
-                  onChange={handleChange}
-                  placeholder="you@example.com"
-                  required
-                  className="w-full border border-sage bg-transparent px-4 py-3 outline-none focus:border-forest"
+                  readOnly
+                  className="w-full border border-sage bg-[#E8E9DF] px-4 py-3 text-muted outline-none"
                 />
               </div>
 
@@ -256,7 +377,6 @@ function Registration() {
 
             <div className="mt-8 grid gap-6 md:grid-cols-2">
 
-              {/* Project Name */}
               <div className="md:col-span-2">
                 <label htmlFor="projectName" className="mb-2 block text-sm font-medium">
                   Project Name
@@ -274,7 +394,6 @@ function Registration() {
                 />
               </div>
 
-              {/* Domain */}
               <div>
                 <label htmlFor="domain" className="mb-2 block text-sm font-medium">
                   Domain / Track
@@ -298,7 +417,6 @@ function Registration() {
                 </select>
               </div>
 
-              {/* PPT Link */}
               <div>
                 <label htmlFor="pptLink" className="mb-2 block text-sm font-medium">
                   Project PPT Link
@@ -316,7 +434,6 @@ function Registration() {
                 />
               </div>
 
-              {/* Prototype Link */}
               <div className="md:col-span-2">
                 <label htmlFor="prototypeLink" className="mb-2 block text-sm font-medium">
                   Prototype Link
@@ -334,7 +451,6 @@ function Registration() {
                 />
               </div>
 
-              {/* Optional Demo Video */}
               <div className="md:col-span-2">
                 <label htmlFor="demoVideoLink" className="mb-2 block text-sm font-medium">
                   Demo Video Link
@@ -364,10 +480,7 @@ function Registration() {
             </h2>
 
             <div className="mt-8 max-w-md">
-              <label
-                htmlFor="teamSize"
-                className="mb-2 block text-sm font-medium"
-              >
+              <label htmlFor="teamSize" className="mb-2 block text-sm font-medium">
                 Team Size
               </label>
 
@@ -389,7 +502,6 @@ function Registration() {
 
             {formData.teamMembers.length > 0 && (
               <div className="mt-10 space-y-8">
-
                 <div>
                   <h3 className="font-display text-xl text-forest">
                     Team Member Information
@@ -401,16 +513,12 @@ function Registration() {
                 </div>
 
                 {formData.teamMembers.map((member, index) => (
-                  <div
-                    key={index}
-                    className="border-t border-sage pt-6"
-                  >
+                  <div key={index} className="border-t border-sage pt-6">
                     <p className="mb-6 font-display text-lg text-forest">
                       Member {index + 1}
                     </p>
 
                     <div className="grid gap-6 md:grid-cols-2">
-
                       <div>
                         <label
                           htmlFor={`memberName-${index}`}
@@ -424,11 +532,7 @@ function Registration() {
                           type="text"
                           value={member.name}
                           onChange={(event) =>
-                            handleTeamMemberChange(
-                              index,
-                              'name',
-                              event.target.value
-                            )
+                            handleTeamMemberChange(index, 'name', event.target.value)
                           }
                           placeholder="Enter member name"
                           required
@@ -449,22 +553,16 @@ function Registration() {
                           type="email"
                           value={member.email}
                           onChange={(event) =>
-                            handleTeamMemberChange(
-                              index,
-                              'email',
-                              event.target.value
-                            )
+                            handleTeamMemberChange(index, 'email', event.target.value)
                           }
                           placeholder="member@example.com"
                           required
                           className="w-full border border-sage bg-transparent px-4 py-3 outline-none focus:border-forest"
                         />
                       </div>
-
                     </div>
                   </div>
                 ))}
-
               </div>
             )}
 
@@ -476,9 +574,8 @@ function Registration() {
             )}
           </section>
 
-          {/* Form Submission */}
+          {/* Submission */}
           <div className="border-t border-sage pt-8">
-
             <p className="mb-6 max-w-2xl text-sm leading-6 text-muted">
               Please review your personal, academic and project details
               before submitting your hackathon registration.
@@ -486,11 +583,11 @@ function Registration() {
 
             <button
               type="submit"
-              className="w-full bg-forest px-7 py-4 font-medium text-ivory transition-colors hover:bg-charcoal sm:w-auto"
+              disabled={loading || Boolean(success)}
+              className="w-full bg-forest px-7 py-4 font-medium text-ivory transition-colors hover:bg-charcoal disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
             >
-              Submit Registration →
+              {loading ? 'Submitting...' : success ? 'Registration Submitted' : 'Submit Registration →'}
             </button>
-
           </div>
 
         </form>

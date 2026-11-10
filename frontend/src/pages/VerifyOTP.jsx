@@ -1,13 +1,15 @@
 
 import { useRef, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import API_BASE_URL from '../config/api'
 
 function VerifyOTP() {
   const navigate = useNavigate()
+  const location = useLocation()
   const inputRefs = useRef([])
 
   const email = sessionStorage.getItem('verificationEmail') || ''
+  const emailDeliveryFailed = location.state?.emailDeliveryFailed === true
 
   const [otp, setOtp] = useState(['', '', '', '', '', ''])
   const [loading, setLoading] = useState(false)
@@ -73,7 +75,6 @@ function VerifyOTP() {
     })
 
     setOtp(updated)
-
     inputRefs.current[Math.min(pastedDigits.length, 5)]?.focus()
   }
 
@@ -175,8 +176,9 @@ function VerifyOTP() {
           </h1>
 
           <p className="mt-4 leading-7 text-muted">
-            We've sent a verification code to your email address.
-            Enter the six-digit code below to continue.
+            {emailDeliveryFailed
+              ? 'Your account has been created, but the verification email could not be delivered.'
+              : 'Enter the six-digit verification code sent to your email address.'}
           </p>
 
           {email && (
@@ -185,6 +187,12 @@ function VerifyOTP() {
             </p>
           )}
         </div>
+
+        {emailDeliveryFailed && (
+          <div className="mb-6 border border-amber-300 bg-amber-50 p-4 text-sm text-amber-800">
+            Email delivery is currently unavailable. You can try resending the OTP once the email service is configured.
+          </div>
+        )}
 
         <form className="space-y-8" onSubmit={handleVerify}>
           <div>

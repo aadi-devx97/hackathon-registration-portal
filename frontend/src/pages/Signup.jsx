@@ -47,13 +47,16 @@ function Signup() {
 
       const data = await response.json()
 
-      // The backend creates the account before attempting email delivery.
-      if (
-        response.status === 503 &&
-        data.message?.includes('Account created')
-      ) {
+      if (response.status === 503 && data.message?.includes('Account created')) {
         sessionStorage.setItem('verificationEmail', formData.email)
-        navigate('/verify-otp')
+
+        navigate('/verify-otp', {
+          state: {
+            emailDeliveryFailed: true,
+            message: data.message,
+          },
+        })
+
         return
       }
 
@@ -62,7 +65,12 @@ function Signup() {
       }
 
       sessionStorage.setItem('verificationEmail', formData.email)
-      navigate('/verify-otp')
+
+      navigate('/verify-otp', {
+        state: {
+          emailDeliveryFailed: false,
+        },
+      })
     } catch (error) {
       setError(error.message)
     } finally {
@@ -98,6 +106,7 @@ function Signup() {
             <label htmlFor="fullName" className="mb-2 block text-sm font-medium text-charcoal">
               Full Name
             </label>
+
             <input
               id="fullName"
               type="text"
@@ -107,6 +116,8 @@ function Signup() {
               placeholder="Enter your full name"
               required
               minLength={3}
+              pattern="[A-Za-z ]+"
+              title="Name should contain letters and spaces only"
               className="w-full border border-sage bg-transparent px-4 py-3 outline-none transition focus:border-forest"
             />
           </div>
@@ -115,6 +126,7 @@ function Signup() {
             <label htmlFor="email" className="mb-2 block text-sm font-medium text-charcoal">
               Email Address
             </label>
+
             <input
               id="email"
               type="email"
@@ -131,6 +143,7 @@ function Signup() {
             <label htmlFor="password" className="mb-2 block text-sm font-medium text-charcoal">
               Password
             </label>
+
             <input
               id="password"
               type="password"
@@ -148,6 +161,7 @@ function Signup() {
             <label htmlFor="confirmPassword" className="mb-2 block text-sm font-medium text-charcoal">
               Confirm Password
             </label>
+
             <input
               id="confirmPassword"
               type="password"
