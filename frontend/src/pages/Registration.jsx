@@ -23,12 +23,12 @@ function Registration() {
     teamMembers: [],
   })
 
+  const [collegeIsOther, setCollegeIsOther] = useState(false)
   const [loading, setLoading] = useState(false)
   const [fetchingProfile, setFetchingProfile] = useState(true)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
 
-  // Fetch authenticated user's profile
   useEffect(() => {
     async function fetchProfile() {
       const token = localStorage.getItem('token')
@@ -72,6 +72,17 @@ function Registration() {
     setFormData((previousData) => ({
       ...previousData,
       [name]: value,
+    }))
+  }
+
+  function handleCollegeChange(event) {
+    const value = event.target.value
+
+    setCollegeIsOther(value === 'Other')
+
+    setFormData((previousData) => ({
+      ...previousData,
+      college: value === 'Other' ? '' : value,
     }))
   }
 
@@ -153,7 +164,9 @@ function Registration() {
         throw new Error(data.message || 'Registration failed. Please try again.')
       }
 
-      setSuccess('Your hackathon registration was successful! Redirecting to your dashboard...')
+      setSuccess(
+        'Your hackathon registration was successful! Redirecting to your dashboard...'
+      )
 
       setTimeout(() => {
         navigate('/dashboard', { replace: true })
@@ -176,7 +189,6 @@ function Registration() {
   return (
     <main className="min-h-screen bg-ivory px-6 py-20">
       <div className="mx-auto max-w-4xl">
-
         <Link
           to="/dashboard"
           className="mb-8 inline-block text-sm font-medium text-forest underline underline-offset-4"
@@ -193,8 +205,7 @@ function Registration() {
         </h1>
 
         <p className="mt-4 leading-7 text-muted">
-          Tell us about yourself, your team and the project
-          you want to build.
+          Tell us about yourself, your team and the project you want to build.
         </p>
 
         {error && (
@@ -209,11 +220,7 @@ function Registration() {
           </div>
         )}
 
-        <form
-          className="mt-16 space-y-16"
-          onSubmit={handleSubmit}
-        >
-
+        <form className="mt-16 space-y-16" onSubmit={handleSubmit}>
           {/* Personal Details */}
           <section>
             <h2 className="border-b border-sage pb-4 font-display text-2xl text-forest">
@@ -221,12 +228,10 @@ function Registration() {
             </h2>
 
             <div className="mt-8 grid gap-6 md:grid-cols-2">
-
               <div>
                 <label htmlFor="fullName" className="mb-2 block text-sm font-medium">
                   Full Name
                 </label>
-
                 <input
                   id="fullName"
                   name="fullName"
@@ -240,7 +245,6 @@ function Registration() {
                 <label htmlFor="email" className="mb-2 block text-sm font-medium">
                   Email Address
                 </label>
-
                 <input
                   id="email"
                   name="email"
@@ -255,7 +259,6 @@ function Registration() {
                 <label htmlFor="mobile" className="mb-2 block text-sm font-medium">
                   Mobile Number
                 </label>
-
                 <input
                   id="mobile"
                   name="mobile"
@@ -271,7 +274,6 @@ function Registration() {
                   className="w-full border border-sage bg-transparent px-4 py-3 outline-none focus:border-forest"
                 />
               </div>
-
             </div>
           </section>
 
@@ -282,28 +284,53 @@ function Registration() {
             </h2>
 
             <div className="mt-8 grid gap-6 md:grid-cols-2">
-
               <div>
-                <label htmlFor="college" className="mb-2 block text-sm font-medium">
+                <label htmlFor="collegeSelect" className="mb-2 block text-sm font-medium">
                   College Name
                 </label>
 
-                <input
-                  id="college"
-                  name="college"
-                  value={formData.college}
-                  onChange={handleChange}
-                  placeholder="Enter your college name"
+                <select
+                  id="collegeSelect"
+                  value={collegeIsOther ? 'Other' : formData.college}
+                  onChange={handleCollegeChange}
                   required
-                  className="w-full border border-sage bg-transparent px-4 py-3 outline-none focus:border-forest"
-                />
+                  className="w-full border border-sage bg-ivory px-4 py-3 outline-none focus:border-forest"
+                >
+                  <option value="">Select your college</option>
+                  <option value="IIT Delhi">IIT Delhi</option>
+                  <option value="IIT Bombay">IIT Bombay</option>
+                  <option value="IIT Kanpur">IIT Kanpur</option>
+                  <option value="IIT Roorkee">IIT Roorkee</option>
+                  <option value="IIT Madras">IIT Madras</option>
+                  <option value="NIT Delhi">NIT Delhi</option>
+                  <option value="NIT Kurukshetra">NIT Kurukshetra</option>
+                  <option value="University of Delhi">University of Delhi</option>
+                  <option value="Jamia Millia Islamia">Jamia Millia Islamia</option>
+                  <option value="Amity University">Amity University</option>
+                  <option value="VIT Vellore">VIT Vellore</option>
+                  <option value="BITS Pilani">BITS Pilani</option>
+                  <option value="Other">Other</option>
+                </select>
+
+                {collegeIsOther && (
+                  <input
+                    id="college"
+                    name="college"
+                    type="text"
+                    value={formData.college}
+                    onChange={handleChange}
+                    placeholder="Enter your college's full name"
+                    minLength={2}
+                    required
+                    className="mt-3 w-full border border-sage bg-transparent px-4 py-3 outline-none focus:border-forest"
+                  />
+                )}
               </div>
 
               <div>
                 <label htmlFor="course" className="mb-2 block text-sm font-medium">
                   Course
                 </label>
-
                 <select
                   id="course"
                   name="course"
@@ -326,7 +353,6 @@ function Registration() {
                 <label htmlFor="branch" className="mb-2 block text-sm font-medium">
                   Branch
                 </label>
-
                 <select
                   id="branch"
                   name="branch"
@@ -349,7 +375,6 @@ function Registration() {
                 <label htmlFor="year" className="mb-2 block text-sm font-medium">
                   Year of Study
                 </label>
-
                 <select
                   id="year"
                   name="year"
@@ -365,7 +390,6 @@ function Registration() {
                   <option value="4th">4th Year</option>
                 </select>
               </div>
-
             </div>
           </section>
 
@@ -376,12 +400,10 @@ function Registration() {
             </h2>
 
             <div className="mt-8 grid gap-6 md:grid-cols-2">
-
               <div className="md:col-span-2">
                 <label htmlFor="projectName" className="mb-2 block text-sm font-medium">
                   Project Name
                 </label>
-
                 <input
                   id="projectName"
                   name="projectName"
@@ -398,7 +420,6 @@ function Registration() {
                 <label htmlFor="domain" className="mb-2 block text-sm font-medium">
                   Domain / Track
                 </label>
-
                 <select
                   id="domain"
                   name="domain"
@@ -421,7 +442,6 @@ function Registration() {
                 <label htmlFor="pptLink" className="mb-2 block text-sm font-medium">
                   Project PPT Link
                 </label>
-
                 <input
                   id="pptLink"
                   name="pptLink"
@@ -438,7 +458,6 @@ function Registration() {
                 <label htmlFor="prototypeLink" className="mb-2 block text-sm font-medium">
                   Prototype Link
                 </label>
-
                 <input
                   id="prototypeLink"
                   name="prototypeLink"
@@ -458,7 +477,6 @@ function Registration() {
                     (Optional)
                   </span>
                 </label>
-
                 <input
                   id="demoVideoLink"
                   name="demoVideoLink"
@@ -469,7 +487,6 @@ function Registration() {
                   className="w-full border border-sage bg-transparent px-4 py-3 outline-none focus:border-forest"
                 />
               </div>
-
             </div>
           </section>
 
@@ -483,7 +500,6 @@ function Registration() {
               <label htmlFor="teamSize" className="mb-2 block text-sm font-medium">
                 Team Size
               </label>
-
               <select
                 id="teamSize"
                 name="teamSize"
@@ -506,7 +522,6 @@ function Registration() {
                   <h3 className="font-display text-xl text-forest">
                     Team Member Information
                   </h3>
-
                   <p className="mt-2 text-sm text-muted">
                     Enter the name and email address of each team member.
                   </p>
@@ -526,7 +541,6 @@ function Registration() {
                         >
                           Member Name
                         </label>
-
                         <input
                           id={`memberName-${index}`}
                           type="text"
@@ -547,7 +561,6 @@ function Registration() {
                         >
                           Member Email
                         </label>
-
                         <input
                           id={`memberEmail-${index}`}
                           type="email"
@@ -577,8 +590,8 @@ function Registration() {
           {/* Submission */}
           <div className="border-t border-sage pt-8">
             <p className="mb-6 max-w-2xl text-sm leading-6 text-muted">
-              Please review your personal, academic and project details
-              before submitting your hackathon registration.
+              Please review your personal, academic and project details before
+              submitting your hackathon registration.
             </p>
 
             <button
@@ -586,10 +599,13 @@ function Registration() {
               disabled={loading || Boolean(success)}
               className="w-full bg-forest px-7 py-4 font-medium text-ivory transition-colors hover:bg-charcoal disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
             >
-              {loading ? 'Submitting...' : success ? 'Registration Submitted' : 'Submit Registration →'}
+              {loading
+                ? 'Submitting...'
+                : success
+                  ? 'Registration Submitted'
+                  : 'Submit Registration →'}
             </button>
           </div>
-
         </form>
       </div>
     </main>
